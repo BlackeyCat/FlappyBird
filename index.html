@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		* {
+			margin: 0;
+			padding: 0;
+		}
+		canvas {
+			display: block;
+			border: 1px solid red;
+			margin: 0 auto;
+		}
+		div {
+			position: relative;
+		}
+		p {
+			position: absolute;
+			width: 50px;
+			height: 50px;
+			/*background-color: #fff;*/
+			left: 50%;
+			top:15px;
+			margin-left: -25px;
+			color: #ff5;
+			text-align: center;
+			line-height: 50px;
+			font-size: 30px;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<div>	
+		<canvas id="myCanvas" width="360" height="512"></canvas>
+		<p id="score"></p>
+	</div>
+
+	<script type="text/javascript" src="js/Game.js"></script>
+	<script type="text/javascript" src="js/Background.js"></script>
+	<script type="text/javascript" src="js/Bird.js"></script>
+	<script type="text/javascript" src="js/Pipe.js"></script>
+	<script type="text/javascript">
+	/*
+		游戏分析:
+			像素鸟游戏就是一只鸟不停的穿越管子，同时地面向后撤，管子向后撤， 背景向后撤， 但是背景的移动速度比较慢
+
+		当前游戏可以分为几个类呢: 
+			鸟类， 管子类， 背景类(地面， 山)， 游戏类
+
+		继续分析: 当前游戏需要很多图片
+		所需要的图片有: 
+			["images/bird0_0.png", "images/bird0_1.png", "images/bird0_2.png", "images/bg_day.png", "images/land.png", "images/pipe_down.png", "images/pipe_up.png"];
+	 */
+
+
+	 // 定义数组， 用于存放当前游戏所需要的图片
+	 var imgArr = ["images/bird0_0.png", "images/bird0_1.png", "images/bird0_2.png", "images/bg_day.png", "images/land.png", "images/pipe_down.png", "images/pipe_up.png"];
+
+	 var game_score = document.getElementById("score");
+
+
+	 // 调用
+	 loadImage(imgArr, function(imgArr) {
+	 	var canvas = document.getElementById("myCanvas");
+	 	var ctx = canvas.getContext("2d");
+	 	var bird = new Bird(imgArr.slice(0, 3), 100, 100);
+	 	var pipe = new Pipe(imgArr[5], imgArr[6], 4, 360);
+	 	var land = new Background(imgArr[4], 4, 0, 400);
+	 	var mountain = new Background(imgArr[3], 2, 0, 0);
+
+	 	window.g = new Game(ctx, bird, pipe, land, mountain);
+	 	
+	 })
+
+	 // 定义函数， 传递两个参数， 第一个参数是一个数组， 第二个参数是一个回调函数， 当所有图片加载完毕之后执行回调函数
+
+	 /**
+	  * loadImage 用于加载图片， 并且当所有图片加载完毕之后执行回调函数
+	  * @imgArr 图片数组
+	  * @ callBack 回调函数
+	  **/
+	 function loadImage(arr, callBack) {
+	 	// 定义一个信号量
+	 	var idx = 0;
+	 	// 定义一个空数组
+	 	var loadedImageArr = [];
+	 	arr.forEach(function(value, index) {
+	 		// 创建图片元素
+	 		var img = new Image();
+	 		// 设置路径
+			img.src = value;
+			// 添加load事件
+			img.onload = function() {
+				// 信号量改变
+				idx++;
+				// 由于load事件中， 图片加载的顺序可能不一样， 为了保证图片顺序加载，使用index
+				// 让数组按顺序接收img元素，经过测试发现还是有加载顺序问题
+				loadedImageArr[index] = this;
+				// 判断当前信号量与数组的长度是否相等
+				if (idx === arr.length) {
+					// 相等就可以执行回调函数了，否则会输出this.length次
+					callBack(loadedImageArr);
+				}
+			}
+	 	})
+	 }
+
+	</script>
+</body>
+</html>
